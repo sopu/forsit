@@ -34,7 +34,7 @@ cursor=conn.cursor()
 remote_conn = db.connect('remote')
 remote_cursor = remote_conn.cursor()
 
-base_url = "https://erdos.sdslabs.co"
+base_url = "https://backdoor.sdslabs.co"
 
 def fetch_problems():
 
@@ -42,7 +42,7 @@ def fetch_problems():
     problem_list = []
     problem_db = {}
     
-    sql = "SELECT pid from problem WHERE MID(pid,1,3)=\"erd\""
+    sql = "SELECT pid from problem WHERE MID(pid,1,4)=\"bkdr\""
     a = db.read(sql, cursor)
     for i in a:
         temp = str(i[0].encode('utf8'))
@@ -78,7 +78,10 @@ def fetch_problems():
             if(tag not in tags):
                 tag_flag = 0
                 tag_sql+="('" + tag + "','','"  + str(int(time())) + "','" + tag_count + "'), "
+
+            #might change for BKDR
             ptag_url = base_url+"/tags/"+tag+".json"
+
             ptag_r = requests.get(ptag_url)
             if(ptag_r.status_code != 200 ):
                 print ptag_r.status_code, " returned from ", ptag_url
@@ -95,7 +98,7 @@ def fetch_problems():
                         prob = prob.json()['submissions']
                         correct = prob['correct']
                         total = prob['total']
-                        code ="erd"+code
+                        code ="bkdr"+code
                         name = str(i['name'].encode('utf8'))
                         name = name.replace('"','\\"')
                         name = name.replace("'","\\'")
@@ -123,7 +126,7 @@ def fetch_problems():
             db.write(ptag_sql, cursor, conn)
 
 def fetch_users():
-    sql_user = "SELECT MID(erd_handle,4) FROM user"
+    sql_user = "SELECT MID(bkdr_handle,5) FROM user"
     result = db.read(sql_user, cursor)
     user_list = {}
     #using dict for faster lookup
@@ -149,19 +152,21 @@ def fetch_users():
 
     if new_user:         
         # print len(new_user)
+
+        #TODO: Need to add backdoor handle column to the table 
         sql = "INSERT INTO user (bkdr_handle, erd_handle, cfs_handle) VALUES "
         for i in new_user:
-            sql+="(\'bkdr\',\'erd"+str(i)+"\',\'cfs\'), "
+            sql+="(\'bkdr"+str(i)+"\',\'erd\',\'cfs\'), "
         sql=sql[:-2]
         print sql
         db.write(sql, cursor, conn)
         db.write(sql, remote_cursor, remote_conn)
 
-def fetch_user_activity_erd(uid="", handle=""):
+def fetch_user_activity_bkdr(uid="", handle=""):
     '''
-    |  Fetch User's activity from Erdos
+    |  Fetch User's activity from Backdoor
     '''
-    url = base_url+"/activity/users/" + handle[3:] + ".json"
+    url = base_url+"/activity/users/" + handle[4:] + ".json"
     print url
 
     sql = "SELECT MAX(created_at) FROM activity WHERE handle = \'" + handle + "\'"
@@ -183,13 +188,13 @@ def fetch_user_activity_erd(uid="", handle=""):
         result.reverse()
         for act in result:
             if int(act['created_at']) > last_activity:
-                sql = "SELECT pid FROM activity WHERE pid = \'erd" + act['problem_id'] + "\' AND handle = \'" + handle + "\'"
+                sql = "SELECT pid FROM activity WHERE pid = \'bkdr" + act['problem_id'] + "\' AND handle = \'" + handle + "\'"
                 check = db.read(sql, cursor)
                 difficulty = 0
                 if check == ():
-                    sql = "INSERT INTO activity (handle, pid, attempt_count, status, difficulty, uid, created_at) VALUES ( \'" + handle + "\', \'erd" + act['problem_id'] + "\', '1', " + str(act['status']) + ", " + str(difficulty) + ", " +  uid + ", " + str(act['created_at']) + " )"
+                    sql = "INSERT INTO activity (handle, pid, attempt_count, status, difficulty, uid, created_at) VALUES ( \'" + handle + "\', \'bkdr" + act['problem_id'] + "\', '1', " + str(act['status']) + ", " + str(difficulty) + ", " +  uid + ", " + str(act['created_at']) + " )"
                     db.write(sql, cursor, conn)
-                    p = problem("erd" + act['problem_id'])
+                    p = problem("bkdr" + act['problem_id'])
                     if p.exists_in_db != -1:
                         tag_data = p.tag
                         for tag in tag_data:
@@ -203,22 +208,22 @@ def fetch_user_activity_erd(uid="", handle=""):
                                 db.write(sql, cursor, conn)
 
                 else:
-                    sql = "UPDATE activity SET attempt_count = attempt_count + 1, status = " + str(act['status']) + ", difficulty = " + str(difficulty) + ", created_at = " + str(act['created_at']) + " WHERE pid = \'erd" + act['problem_id'] + "\' AND handle = \'" + handle + "\'"
+                    sql = "UPDATE activity SET attempt_count = attempt_count + 1, status = " + str(act['status']) + ", difficulty = " + str(difficulty) + ", created_at = " + str(act['created_at']) + " WHERE pid = \'bkdr" + act['problem_id'] + "\' AND handle = \'" + handle + "\'"
                     db.write(sql, cursor, conn)
             print sql
 
 def fetch_activity():
-    # erd_users = fetch_user_list_erd()
-    sql = "SELECT uid, erd_handle FROM user"
-    erd_users = db.read(sql, cursor)
-    for i in erd_users:
+    # bkdr_users = fetch_user_list_bkdr()
+    sql = "SELECT uid, bkdr_handle FROM user"
+    bkdr_users = db.read(sql, cursor)
+    for i in bkdr_users:
         uid = str(i[0])
         handle = str(i[1].encode('utf8'))
-        fetch_user_activity_erd(uid, handle)
+        fetch_user_activity_bkdr(uid, handle)
         # print "User activity for " + handle
-    sql = "UPDATE user SET erd_score = \
+    sql = "UPDATE user SET bkdr_score = \
           (SELECT SUM((correct_count-3)/attempt_count) FROM problem WHERE pid IN \
-          (SELECT DISTINCT(pid) FROM activity WHERE uid = user.uid AND MID(pid,1,3)=\'erd\' AND status = 1)\
+          (SELECT DISTINCT(pid) FROM activity WHERE uid = user.uid AND MID(pid,1,4)=\'bkdr\' AND status = 1)\
           AND correct_count>3)"
     # print sql
     db.write(sql, cursor, conn)
