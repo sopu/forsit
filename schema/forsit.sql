@@ -1,20 +1,20 @@
 -- phpMyAdmin SQL Dump
--- version 3.5.8.1deb1
+-- version 4.5.4.1deb2ubuntu2
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 17, 2015 at 02:07 AM
--- Server version: 5.5.34-0ubuntu0.13.04.1
--- PHP Version: 5.4.9-4ubuntu2.4
+-- Generation Time: Jan 06, 2017 at 04:31 PM
+-- Server version: 5.7.16-0ubuntu0.16.04.1
+-- PHP Version: 7.0.8-0ubuntu0.16.04.3
 
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `forsit`
@@ -26,7 +26,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `activity`
 --
 
-CREATE TABLE IF NOT EXISTS `activity` (
+CREATE TABLE `activity` (
   `handle` varchar(100) NOT NULL,
   `pid` varchar(100) NOT NULL,
   `attempt_count` int(11) NOT NULL DEFAULT '0',
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `activity` (
 -- Table structure for table `activity_concept`
 --
 
-CREATE TABLE IF NOT EXISTS `activity_concept` (
+CREATE TABLE `activity_concept` (
   `handle` varchar(100) NOT NULL,
   `pid` varchar(100) NOT NULL,
   `attempt_count` int(11) NOT NULL DEFAULT '0',
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `activity_concept` (
 -- Table structure for table `problem`
 --
 
-CREATE TABLE IF NOT EXISTS `problem` (
+CREATE TABLE `problem` (
   `pid` varchar(50) NOT NULL,
   `name` varchar(200) NOT NULL,
   `contestId` varchar(50) NOT NULL,
@@ -66,12 +66,7 @@ CREATE TABLE IF NOT EXISTS `problem` (
   `correct_count` int(11) NOT NULL,
   `attempt_count` int(11) NOT NULL DEFAULT '-1',
   `time` int(11) NOT NULL,
-  `isdeleted` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`pid`),
-  KEY `name` (`name`),
-  KEY `pid` (`pid`),
-  KEY `contestId` (`contestId`),
-  KEY `points` (`points`)
+  `isdeleted` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -80,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `problem` (
 -- Table structure for table `problem_reco`
 --
 
-CREATE TABLE IF NOT EXISTS `problem_reco` (
+CREATE TABLE `problem_reco` (
   `uid` varchar(100) NOT NULL,
   `base_pid` varchar(100) NOT NULL,
   `status` int(11) NOT NULL,
@@ -98,11 +93,9 @@ CREATE TABLE IF NOT EXISTS `problem_reco` (
 -- Table structure for table `ptag`
 --
 
-CREATE TABLE IF NOT EXISTS `ptag` (
+CREATE TABLE `ptag` (
   `pid` varchar(50) NOT NULL,
-  `tag` varchar(100) NOT NULL,
-  PRIMARY KEY (`pid`,`tag`),
-  KEY `tag` (`tag`)
+  `tag` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -111,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `ptag` (
 -- Table structure for table `similar_users`
 --
 
-CREATE TABLE IF NOT EXISTS `similar_users` (
+CREATE TABLE `similar_users` (
   `uid` int(11) NOT NULL,
   `similar_user` varchar(300) NOT NULL,
   `similarity` double NOT NULL
@@ -123,13 +116,11 @@ CREATE TABLE IF NOT EXISTS `similar_users` (
 -- Table structure for table `tag`
 --
 
-CREATE TABLE IF NOT EXISTS `tag` (
+CREATE TABLE `tag` (
   `tag` varchar(100) NOT NULL,
   `description` varchar(250) NOT NULL,
   `time` int(11) NOT NULL,
-  `count` int(11) NOT NULL,
-  PRIMARY KEY (`tag`),
-  UNIQUE KEY `tag` (`tag`,`description`)
+  `count` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -138,14 +129,15 @@ CREATE TABLE IF NOT EXISTS `tag` (
 -- Table structure for table `user`
 --
 
-CREATE TABLE IF NOT EXISTS `user` (
-  `uid` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `user` (
+  `uid` int(11) NOT NULL,
+  `bkdr_handle` varchar(50) NOT NULL,
   `erd_handle` varchar(50) NOT NULL,
   `cfs_handle` varchar(50) NOT NULL,
+  `bkdr_score` double NOT NULL,
   `erd_score` double NOT NULL,
-  `cfs_score` double NOT NULL,
-  PRIMARY KEY (`uid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=9059 ;
+  `cfs_score` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -153,7 +145,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- Table structure for table `user_reco`
 --
 
-CREATE TABLE IF NOT EXISTS `user_reco` (
+CREATE TABLE `user_reco` (
   `uid` varchar(100) NOT NULL,
   `pid` varchar(100) NOT NULL,
   `score` double NOT NULL,
@@ -169,12 +161,55 @@ CREATE TABLE IF NOT EXISTS `user_reco` (
 -- Table structure for table `user_tag_score`
 --
 
-CREATE TABLE IF NOT EXISTS `user_tag_score` (
+CREATE TABLE `user_tag_score` (
   `handle` varchar(100) NOT NULL,
   `tag` varchar(100) NOT NULL,
   `score` double NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `problem`
+--
+ALTER TABLE `problem`
+  ADD PRIMARY KEY (`pid`),
+  ADD KEY `name` (`name`),
+  ADD KEY `pid` (`pid`),
+  ADD KEY `contestId` (`contestId`),
+  ADD KEY `points` (`points`);
+
+--
+-- Indexes for table `ptag`
+--
+ALTER TABLE `ptag`
+  ADD PRIMARY KEY (`pid`,`tag`),
+  ADD KEY `tag` (`tag`);
+
+--
+-- Indexes for table `tag`
+--
+ALTER TABLE `tag`
+  ADD PRIMARY KEY (`tag`),
+  ADD UNIQUE KEY `tag` (`tag`,`description`);
+
+--
+-- Indexes for table `user`
+--
+ALTER TABLE `user`
+  ADD PRIMARY KEY (`uid`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `user`
+--
+ALTER TABLE `user`
+  MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9059;
 --
 -- Constraints for dumped tables
 --
